@@ -1,6 +1,7 @@
 package com.raga.meetings.controller;
 
 import com.raga.meetings.error.exceptions.AddMeetingException;
+import com.raga.meetings.error.exceptions.DeleteMeetingException;
 import com.raga.meetings.error.exceptions.MeetingValidatorException;
 import com.raga.meetings.model.Meeting;
 import com.raga.meetings.service.MeetingService;
@@ -34,7 +35,7 @@ public class MeetingController {
     }
 
     @DeleteMapping("/title/{meetingTitle}")
-    public ResponseEntity<String> RemoveMeeting(@PathVariable @NonNull String meetingTitle) {
+    public ResponseEntity<String> RemoveMeeting(@PathVariable @NonNull String meetingTitle) throws DeleteMeetingException {
         log.info("remove meetings with title: "+meetingTitle);
         meetingService.removeMeetingByTitle(meetingTitle);
         return new ResponseEntity<>("Meetings with title \"" + meetingTitle + "\" deleted successfully", HttpStatus.NO_CONTENT);
@@ -42,7 +43,7 @@ public class MeetingController {
 
     @DeleteMapping
     public ResponseEntity<String> RemoveMeeting(@RequestParam("fromTime")
-                                                @DateTimeFormat(pattern = "yyyyMMddHHmm") @NonNull LocalDateTime fromTime) {
+                                                @DateTimeFormat(pattern = "yyyyMMddHHmm") @NonNull LocalDateTime fromTime) throws DeleteMeetingException {
         log.info("remove meeting start at: "+fromTime);
         meetingService.removeMeetingByFromTime(fromTime);
         return new ResponseEntity<>("Meetings that end at  \"" + fromTime + "\" deleted successfully", HttpStatus.NO_CONTENT);

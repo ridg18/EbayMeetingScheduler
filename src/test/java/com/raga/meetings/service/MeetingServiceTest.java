@@ -2,6 +2,7 @@ package com.raga.meetings.service;
 
 
 import com.raga.meetings.error.exceptions.AddMeetingException;
+import com.raga.meetings.error.exceptions.DeleteMeetingException;
 import com.raga.meetings.error.exceptions.MeetingValidatorException;
 import com.raga.meetings.model.Meeting;
 import org.junit.Before;
@@ -36,8 +37,8 @@ public class MeetingServiceTest {
 
     @Test
     public void addMeeting() throws AddMeetingException, MeetingValidatorException {
-        LocalDateTime startMeeting = LocalDateTime.of(LocalDate.of(2020, 6, 7), LocalTime.of(9, 00, 00));
-        LocalDateTime endMeeting = LocalDateTime.of(LocalDate.of(2020, 6, 7), LocalTime.of(10, 30, 00));
+        LocalDateTime startMeeting = LocalDateTime.of(LocalDate.of(2020, 6, 9), LocalTime.of(9, 00, 00));
+        LocalDateTime endMeeting = LocalDateTime.of(LocalDate.of(2020, 6, 9), LocalTime.of(10, 30, 00));
         Meeting meeting = new Meeting("test", startMeeting, endMeeting);
         meetingService.addMeeting(meeting);
         assert (meetingService.findAll().size() == 1);
@@ -278,7 +279,7 @@ public class MeetingServiceTest {
     }
 
     @Test
-    public void deleteMeetingByTitle() throws AddMeetingException, MeetingValidatorException {
+    public void deleteMeetingByTitle() throws AddMeetingException, MeetingValidatorException, DeleteMeetingException {
         LocalDateTime startMeeting = LocalDateTime.of(LocalDate.of(2020, 6, 7), LocalTime.of(9, 00, 00));
         LocalDateTime endMeeting = LocalDateTime.of(LocalDate.of(2020, 6, 7), LocalTime.of(10, 30, 00));
         Meeting meeting = new Meeting("test", startMeeting, endMeeting);
@@ -295,13 +296,13 @@ public class MeetingServiceTest {
         meetingService.addMeeting(meeting);
         try{
             meetingService.removeMeetingByTitle("test2");
-        }catch (EntityNotFoundException e){
+        }catch (DeleteMeetingException e){
             assert (e.getMessage().equals("Meeting with tile test2 not found"));
         }
     }
 
     @Test
-    public void deleteMeetingByDate() throws AddMeetingException, MeetingValidatorException {
+    public void deleteMeetingByDate() throws AddMeetingException, MeetingValidatorException, DeleteMeetingException {
         LocalDateTime startMeeting = LocalDateTime.of(LocalDate.of(2020, 6, 7), LocalTime.of(9, 00, 00));
         LocalDateTime endMeeting = LocalDateTime.of(LocalDate.of(2020, 6, 7), LocalTime.of(10, 30, 00));
         Meeting meeting = new Meeting("test", startMeeting, endMeeting);
@@ -321,7 +322,7 @@ public class MeetingServiceTest {
         meetingService.addMeeting(meeting);
         try{
             meetingService.removeMeetingByFromTime(startMeeting2);
-        }catch (EntityNotFoundException e){
+        }catch (DeleteMeetingException e){
             assert (e.getMessage().equals("Meeting with start time "+startMeeting2+" not found"));
         }
     }
