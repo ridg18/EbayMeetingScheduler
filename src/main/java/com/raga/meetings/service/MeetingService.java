@@ -2,6 +2,7 @@ package com.raga.meetings.service;
 
 import com.google.common.collect.Lists;
 import com.raga.meetings.error.exceptions.AddMeetingException;
+import com.raga.meetings.error.exceptions.DeleteMeetingException;
 import com.raga.meetings.error.exceptions.MeetingValidatorException;
 import com.raga.meetings.model.Meeting;
 import com.raga.meetings.repository.MeetingRepository;
@@ -11,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityNotFoundException;
+import javax.persistence.TransactionRequiredException;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -55,15 +57,19 @@ public class MeetingService {
      *
      * @param title
      */
-    public void removeMeetingByTitle(String title) {
+    public void removeMeetingByTitle(String title) throws DeleteMeetingException {
         log.debug("retrieve all meetings from db with title: " + title);
         Iterable<Meeting> meetingsToDelete = meetingRepository.findAllByTitle(title);
+        if (Lists.newArrayList(meetingsToDelete).isEmpty()) {
+            log.error("Meetings with tile " + title + " not found");
+            throw new EntityNotFoundException("Meetings with tile " + title + " not found");
+        }
         try {
             log.debug("delete meeting: " + meetingsToDelete);
             meetingRepository.deleteAll(meetingsToDelete);
-        } catch (Exception e) {
-            log.error("Meetings with tile " + title + " not found");
-            throw new EntityNotFoundException("Meetings with tile " + title + " not found");
+        } catch (IllegalArgumentException | TransactionRequiredException e) {
+            log.error("Couldn't delete meeting with title: " + title);
+            throw new DeleteMeetingException("Couldn't delete meeting with title: " + title);
         }
     }
 
@@ -73,15 +79,15 @@ public class MeetingService {
      *
      * @param fromTime
      */
-    public void removeMeetingByFromTime(LocalDateTime fromTime) {
+    public void removeMeetingByFromTime(LocalDateTime fromTime) throws DeleteMeetingException {
         log.debug("retrieve meeting from db with start date and time: " + fromTime);
         Meeting meetingToDelete = meetingRepository.findByFromTime(fromTime);
         try {
             log.debug("delete meeting: " + meetingToDelete);
             meetingRepository.delete(meetingToDelete);
-        } catch (Exception e) {
-            log.error("Meetings with start date and time " + fromTime + " not found");
-            throw new EntityNotFoundException("Meeting with start time " + fromTime + " not found");
+        } catch (IllegalArgumentException | TransactionRequiredException e) {
+            log.error("Couldn't delete meeting with fromTime: " + fromTime);
+            throw new DeleteMeetingException("Couldn't delete meeting with title: " + fromTime);
         }
     }
 
@@ -115,6 +121,10 @@ public class MeetingService {
     public Meeting getNextMeeting() {
         ZoneId zoneId = ZoneId.of("UTC");
         ArrayList<Meeting> meetings = Lists.newArrayList(meetingRepository.findAll());
+        if (meetings.isEmpty()) {
+            log.error("couldn't find next meeting");
+            throw new EntityNotFoundException("couldn't find next meeting");
+        }
         Date now = new Date(Instant.now().getEpochSecond() * 1000l);
         long min = Long.MAX_VALUE;
         int index = Integer.MAX_VALUE;

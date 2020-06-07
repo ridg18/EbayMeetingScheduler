@@ -1,5 +1,6 @@
 package com.raga.meetings.validator;
 
+import com.google.common.collect.Lists;
 import com.raga.meetings.error.ApiError;
 import com.raga.meetings.error.exceptions.MeetingValidatorException;
 import com.raga.meetings.model.Meeting;
@@ -92,7 +93,9 @@ public class MeetingValidator {
      * @return
      */
     public static boolean isOverlapping(Meeting meet, Iterable<Meeting> meetings, MeetingValidatorException meetingValidatorException) {
-
+        if (Lists.newArrayList(meetings).isEmpty()) {
+            return true;
+        }
         for (Meeting m : meetings) {
             if (meet.getFromTime().toLocalDate().equals(m.getFromTime().toLocalDate())) {
 
@@ -147,6 +150,9 @@ public class MeetingValidator {
                                                             MeetingValidatorException meetingValidatorException) {
         Long count = 0L;
         WeekFields weekFields = WeekFields.of(Locale.getDefault());
+        if (Lists.newArrayList(meetings).isEmpty()) {
+            return true;
+        }
         for (Meeting m : meetings) {
             if (meet.getFromTime().toLocalDate().get(weekFields.weekOfWeekBasedYear()) ==
                     m.getFromTime().toLocalDate().get(weekFields.weekOfWeekBasedYear())) {
@@ -175,6 +181,9 @@ public class MeetingValidator {
                                                            MeetingValidatorException meetingValidatorException) {
 
         Long count = 0L;
+        if (Lists.newArrayList(meetings).isEmpty()) {
+            return true;
+        }
         for (Meeting m : meetings) {
             if (meet.getFromTime().toLocalDate().equals(m.getFromTime().toLocalDate())) {
                 count += m.getFromTime().toLocalTime().until(m.getToTime().toLocalTime(), ChronoUnit.HOURS);
